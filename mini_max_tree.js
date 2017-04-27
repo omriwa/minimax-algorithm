@@ -32,47 +32,47 @@ Tree.prototype.getLeftLeaf = function(){
 	return root;
 }
 
-Tree.prototype.findPlaceForNode = function(root , treeH , hCounter){
-	if(treeH <= hCounter)
-		return;
-	else if(!root.getLeftSon() || !root.getRightSon())
-		return root;
-	else{
-		return (
-		this.findPlaceForNode(root.getLeftSon() , treeH , hCounter + 1)
-		||
-		this.findPlaceForNode(root.getRightSon() , treeH , hCounter + 1)
-		)
-	}
-}
+// Tree.prototype.findPlaceForNode = function(root , treeH , hCounter){
+// 	if(treeH <= hCounter)
+// 		return;
+// 	else if(!root.getLeftSon() || !root.getRightSon())
+// 		return root;
+// 	else{
+// 		return (
+// 		this.findPlaceForNode(root.getLeftSon() , treeH , hCounter + 1)
+// 		||
+// 		this.findPlaceForNode(root.getRightSon() , treeH , hCounter + 1)
+// 		)
+// 	}
+// }
 
-/*add node to the tree and away that the tree will be full binary tree*/
-Tree.prototype.addNode = function(node){
-	var root = this.getRoot();
-	//the tree is empty
-	if(!root.getLeftSon() && !root.getRightSon()){
-		root.setLeftSon(node);
-		node.setFather(root);
-		this.increaseTreeHeight();
-	}
-	else{
-		var father = this.findPlaceForNode
-		(root , this.getTreeHeight() , 0);
-		if(father){//the tree is not full until this height
-			if(!father.getLeftSon())
-				father.setLeftSon(node);
-			else
-				father.setRightSon(node);
-		}
-		else{//the tree is full in this height
-			father = this.getLeftLeaf();
-			this.increaseTreeHeight();
-			father.setLeftSon(node);
-		}
-		node.setFather(father);
-	}
+// /*add node to the tree and away that the tree will be full binary tree*/
+// Tree.prototype.addNode = function(node){
+// 	var root = this.getRoot();
+// 	//the tree is empty
+// 	if(!root.getLeftSon() && !root.getRightSon()){
+// 		root.setLeftSon(node);
+// 		node.setFather(root);
+// 		this.increaseTreeHeight();
+// 	}
+// 	else{
+// 		var father = this.findPlaceForNode
+// 		(root , this.getTreeHeight() , 0);
+// 		if(father){//the tree is not full until this height
+// 			if(!father.getLeftSon())
+// 				father.setLeftSon(node);
+// 			else
+// 				father.setRightSon(node);
+// 		}
+// 		else{//the tree is full in this height
+// 			father = this.getLeftLeaf();
+// 			this.increaseTreeHeight();
+// 			father.setLeftSon(node);
+// 		}
+// 		node.setFather(father);
+// 	}
 
-}
+// }
 
 /*print the tree in post order*/
 Tree.prototype.printTree = function(root){
@@ -83,7 +83,10 @@ Tree.prototype.printTree = function(root){
 			this.printTree(root.getChildren()[i]);
 		}
 	    if(root != this.getRoot())
-			console.log(root.getCords()[0] + " " + root.getCords()[1] + " huristic " + root.getHuristicVal());
+			console.log(root.getCords()[0] + " " + 
+			root.getCords()[1] + " huristic " + 
+			root.getHuristicVal() + "father " + root.getFather().getCords()[0] +
+			" " + root.getFather().getCords()[1]);
 		else
 			console.log("root");
 	}
@@ -95,8 +98,11 @@ build minimax tree
 Tree.prototype.buildMiniMaxTree = function(root , isX , n){
 	var vesMatrix;
 	
-	if(root != this.getRoot())
-		vesMatrix = root.getMatrixVessel(root.getVessels());
+	if(root != this.getRoot()){
+		vesMatrix = root.VesselMatrix(root.getVessels());//copying the place of vessels
+		var cords = root.getCords();
+		root.addVessel(cords[0] , cords[1] , root);//adding the root to the vessel matrix
+	}
 
 	if(n <= 0)
 		return;
@@ -109,19 +115,16 @@ Tree.prototype.buildMiniMaxTree = function(root , isX , n){
 						huristicVal = 1;
 					else
 						huristicVal = -1;
-					let child = new Node(isX , j , k , vesMatrix , huristicVal);
-					root.addVessel(j , k , child);//set vessels
+
+					var child = new Node(isX , j , k , vesMatrix , huristicVal);
 					root.addChildren(child);
-					child.setFather(root);
-					child.addVessel(j , k , child);
+					child.setFather(root);		
 				}
 			}
 		}
 
-	for(var i = 0 ; i < root.getChildren().length ; i++){
-		let child = root.getChildren()[i];
-		this.buildMiniMaxTree(child , !isX , n - 1);
-	}
+		for(var i = 0 ; i < root.getChildren().length ; i++)
+			this.buildMiniMaxTree(root.getChildren()[i] , !isX , n - 1);	
 
 }
 

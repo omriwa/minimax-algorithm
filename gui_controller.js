@@ -2,10 +2,15 @@ function Controller(){
 	var
 		_sign , 
 		_circleSign = "O",
-		_xSign = "X";
+		_xSign = "X",
+		_nodeGuiRoot = this.createDomNode();
 
 	this.getSign = function(){
 		return _sign;
+	}
+
+	this.getGuiRoot = function(){
+		return _nodeGuiRoot;
 	}
 
 	this.getCircle = function(){
@@ -68,3 +73,36 @@ Controller.prototype.createDomNode = function(){
 	node.className += "node";
 	return node;
 }
+
+Controller.prototype.addDomNode = function(level){
+	var node = this.createDomNode();
+	level.append(node);
+	return this;
+}
+
+Controller.prototype.createDomLevel = function(){
+	var level = document.createElement("DIV");
+	level.className += "nodelevel";
+	$("#treeplace").append(level);
+	return level;
+}
+
+
+Controller.prototype.buildMiniMaxDomT = function(root){
+	if(root.getChildren().length == 0){
+		return;
+	}
+	else{
+		let level = this.createDomLevel();
+		root.getChildren().forEach(function(child){
+			Controller.prototype.addDomNode(level);
+		});
+
+		root.getChildren().forEach(function(child){
+			Controller.prototype.buildMiniMaxDomT(child);
+		});
+
+	}
+}
+
+

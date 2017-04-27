@@ -16,7 +16,7 @@
 		tree.printTree(tree.getRoot());
 		$(document).ready(function(){
 			var ctrl = new Controller();
-			console.log(ctrl.createDomNode());
+			// ctrl.buildMiniMaxDomT(tree.getRoot());
 			ctrl.setSign(true);
 			$("th").click(function(){
 				ctrl.putSign(this);
@@ -48,6 +48,13 @@
 			height: 20px;
 			width: 20px;
 			background-color: black;
+			margin: 1%;
+			display: inline-block;
+		}
+
+		.nodelevel {
+			margin: 3%;
+			border: 1px solid red;
 		}
 
 		#treeplace {
@@ -111,7 +118,6 @@
 	</table>
 
 	<div id="treeplace">
-		<div class="node"></div>
 	</div>
 
 </body>

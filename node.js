@@ -8,7 +8,7 @@ function Node(sign , x , y , vessels , val){
 		_corX = x,
 		_corY = y,
 		_children = [],
-		_vessels = this.getMatrixVessel(vessels),
+		_vessels = new this.VesselMatrix(vessels),
 		_huristic = val;
 
 		//geters
@@ -92,7 +92,7 @@ function Node(sign , x , y , vessels , val){
 		
 }
 
-Node.prototype.getMatrixVessel = function(vessels){
+Node.prototype.VesselMatrix = function(vessels){
 	var matrix = [];
 		for(var i = 0 ; i < 3 ; i++){
 			matrix[i] = [];
