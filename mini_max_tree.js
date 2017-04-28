@@ -1,5 +1,5 @@
 function Tree(){
-	var _root = new Node(null) , _treeHeight = 0;
+	var _root = new Node(true) , _treeHeight = 0;
 
 	//functions
 
@@ -83,10 +83,12 @@ Tree.prototype.printTree = function(root){
 			this.printTree(root.getChildren()[i]);
 		}
 	    if(root != this.getRoot())
-			console.log(root.getCords()[0] + " " + 
-			root.getCords()[1] + " huristic " + 
-			root.getHuristicVal() + "father " + root.getFather().getCords()[0] +
-			" " + root.getFather().getCords()[1]);
+	    	this.printMatrix(root.getVessels());
+			// console.log(
+			// 	root.getCords()[0] + " " + 
+			// 	root.getCords()[1] + " huristic " + 
+			// 	root.getHuristicVal() + " father " + root.getFather().getCords()
+			// );
 		else
 			console.log("root");
 	}
@@ -110,90 +112,112 @@ Tree.prototype.buildMiniMaxTree = function(root , isX , n){
 		for(var j = 0 ; j < 3 ; j++){//loops for filling the board
 			for(var k = 0 ; k < 3 ; k++){
 				if(!root.thereIsVessel(j , k)){
-					let huristicVal;
-					if(isX)
-						huristicVal = 1;
-					else
-						huristicVal = -1;
-
-					var child = new Node(isX , j , k , vesMatrix , huristicVal);
+					var child = new Node(isX , j , k , vesMatrix);
 					root.addChildren(child);
-					child.setFather(root);		
+					child.setFather(root);
+					this.buildMiniMaxTree(child , !isX , n - 1);	
 				}
 			}
-		}
-
-		for(var i = 0 ; i < root.getChildren().length ; i++)
-			this.buildMiniMaxTree(root.getChildren()[i] , !isX , n - 1);	
+		}		
 
 }
-
+/*check if player won ,sign = true is X player else O player , checking by vertical, horizental and diagonal*/
 Tree.prototype.checkIfWon = function(root){
-	var vessels = root.getVessels();
+	var vessels = root.getVessels() ,
+		diag1Sign , diag2Sign , 
+		diagWon = false , output = 0;
+
+	this.printMatrix(vessels);
 	//check horizental
+	var sign , won = false;
 	for(var i = 0 ; i < 3 ; i++){
+		sign = vessels[i][0];
 		if( vessels[i][0].node && vessels[i][1].node && vessels[i][2].node
 			&&
-			vessels[i][0].node.isX() == root.isX() 
+			vessels[i][0].node.isX() == sign 
 			&&
-			vessels[i][1].node.isX() == root.isX()
+			vessels[i][1].node.isX() == sign
 			&&
-			vessels[i][2].node.isX() == root.isX() 
+			vessels[i][2].node.isX() == sign
 		  )
-			return true;
+			won = true;
 	}
 	//check vertical
 	for(var i = 0 ; i < 3 ; i++){
+		sign = vessels[0][i];
 		if( vessels[0][i].node && vessels[1][i].node && vessels[2][i].node
 			&&
-			vessels[0][i].node.isX() == root.isX() 
+			vessels[0][i].node.isX() == sign 
 			&&
-			vessels[1][i].node.isX() == root.isX()
+			vessels[1][i].node.isX() == sign
 			&&
-			vessels[2][i].node.isX() == root.isX() 
+			vessels[2][i].node.isX() == sign 
 		  )
-			return true;
+			won = true;
 	}
 	//check doiagonal
 	var diag1 = [] , diag2 = [];
-	for(var i = 0 , j = 0 ; i < 3 ; i++ , j++){
-		if(vessels[i][j].node){
-			diag1.push(vessels[i][j].node.isX());
+	for(var i = 0 ; i < 3 ; i++){
+		if(vessels[i][i].node){
+			diag1.push(vessels[i][i].node.isX());
 		}
 		else{
 			diag1 = null;
 			break;
 		}
-		if(vessels[2 - i][2 - j].node){
-			diag2.push(vessels[2 - i][2 - j].node.isX());
+		if(vessels[2 - i][2 - i].node){
+			diag2.push(vessels[i][2 - i].node.isX());
 		}
 		else{
 			diag2 = null;
 			break;
 		}
 	}
+	diag1Sign = diag1[0];
+	diag2Sign = diag2[0];
 	if(
-	   (   diag1 && diag1.length == 3
+	 	   diag1 && diag1.length == 3
 	   	   &&
-		   diag1[0] == root.isX() 
+		   diag1[0] == diag1Sign 
 		   &&
-		   diag1[1] == root.isX() 
+		   diag1[1] == diag1Sign 
 		   &&
-		   diag1[2] == root.isX()
+		   diag1[2] == diag1Sign
 	   )
-	   ||
-	   (
+	{	
+		diagWon = true;
+	}
+
+	if(
 	   	   diag2 && diag2.length == 3
 	   	   &&
-		   diag2[0] == root.isX() 
+		   diag2[0] == diag2Sign 
 		   &&
-		   diag2[1] == root.isX() 
+		   diag2[1] == diag2Sign 
 		   &&
-		   diag2[2] == root.isX()
+		   diag2[2] == diag2Sign
 	   )
-	  )
-		return true;
-	return false;
+	{
+		diagWon = true;
+	}
+
+	if(won || diagWon){
+		
+		if(diagWon){
+			if(diag1Sign || diag2Sign)
+				output = 1;
+			else
+				output = -1;
+		}
+		else{
+			if(sign)
+				output = 1;
+			else
+				output = -1;
+		}
+	}
+	
+	return output;
 }
 
 /*get all the leaf in the tree*/
@@ -211,38 +235,47 @@ Tree.prototype.getAllLeafs = function(){
 	return leafs
 }
 
-/*check if there is tie*/
-Tree.prototype.checkIfTie = function(leaf){
-	var count = 0  , row = leaf.getVessels();
+/*update huristic vals of the tree's leafs*/
+Tree.prototype.updateLeafVal = function(){
+	var leafs = this.getAllLeafs();
 
-	row.forEach(function(col){
-		col.forEach(function(vessel){
-			if(vessel.vessel)
-				count++;
-		});
+	leafs.forEach(function(leaf){
+		leaf.setHuristicVal(Tree.prototype.checkIfWon(leaf));
+		console.log(leaf.getHuristicVal());
 	});
-	if(count >= 7)
-		return true;
-	else
-		return false;
+	
+	return this;
+}
+/*update huristic val of all tree nodes*/
+Tree.prototype.updateTreeVal = function(root){
+	if(root.getChildren().length == 0)
+		return;
+	else{
+		root.getChildren().forEach(function(child){
+			Tree.prototype.updateTreeVal(child);
+			child.getFather().addToHuristic(child.getHuristicVal());
+		});
+	}
 }
 
-Tree.prototype.updateHuristicVal = function(){
-	var roots = this.getRoot().getChildren();
-	var updateTree = function(root){
-		if(root.getChildren().length == 0)
-			return;
-		else{
-			let children = root.getChildren() , sum = 0;
-			children.forEach(function(child){
-				// updateTree(child);
-				sum += child.getHuristicVal();
-			});
-			root.setHuristicVal(sum);
-		}
-	}
+Tree.prototype.intializeMixTree = function(){
+	var root = this.getRoot();
+	this.buildMiniMaxTree(root , true , 9);
+	this.updateLeafVal();
+	this.updateTreeVal(root);
+	// this.printTree(root);
+}
 
-	roots.forEach(function(root){
-		updateTree(root);
+Tree.prototype.printMatrix = function(matrix){
+	var output = "";
+	matrix.forEach(function(row){
+		row.forEach(function(col){
+			if(col.node.isX())
+				output += "X ";
+			else
+				output += "O ";
+		});
+		output += "\n";
 	});
+	console.log(output);
 }

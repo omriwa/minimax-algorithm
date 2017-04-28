@@ -1,5 +1,5 @@
 //node constructor
-function Node(sign , x , y , vessels , val){
+function Node(sign , x , y , vessels){
 	var
 		_sign = sign,
 		_father,
@@ -9,7 +9,7 @@ function Node(sign , x , y , vessels , val){
 		_corY = y,
 		_children = [],
 		_vessels = new this.VesselMatrix(vessels),
-		_huristic = val;
+		_huristic = 0;
 
 		//geters
 
@@ -36,7 +36,8 @@ function Node(sign , x , y , vessels , val){
 		}
 
 		this.getCords = function(){
-			return [_corX , _corY];
+			var cords = [_corX , _corY];
+			return cords;
 		}
 
 		this.getVessels = function(){
@@ -89,6 +90,10 @@ function Node(sign , x , y , vessels , val){
 		this.setHuristicVal = function(val){
 			_huristic = val;
 		}
+
+		this.addToHuristic = function(val){
+			_huristic += val;
+		}
 		
 }
 
@@ -106,17 +111,12 @@ Node.prototype.VesselMatrix = function(vessels){
 	return matrix;
 }
 
-// this.prototype.checkIfWon = function(){
-// 	var matrixLength = this.getVessels().length ,
-// 	 	matrix = this.getVessels();
-
-// 	for(var i = 0 ; i < matrixLength ; i++)
-// 		for(var j = 0 ; j < matrixLength ; j++){
-// 			if(matrix.)
-// 			for(var k = 0 ; k < matrixLength ; k++){
-
-// 			}
-// 		}
-// }
-
+Node.prototype.updateHuristicVal = function(){
+	var sum = 0;
+	this.getChildren().forEach(function(child){
+		sum += child.getHuristicVal();
+	});
+	this.setHuristicVal(sum);
+	return this;
+}
 

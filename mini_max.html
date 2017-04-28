@@ -11,9 +11,10 @@
     </script>
 	<script type="text/javascript">
 		var tree = new Tree();
-		tree.buildMiniMaxTree(tree.getRoot() , true , 6);
-		tree.updateHuristicVal();
-		tree.printTree(tree.getRoot());
+		tree.intializeMixTree();
+		// tree.buildMiniMaxTree(tree.getRoot() , true , 9);
+		// tree.updateHuristicVal(tree.getRoot());
+		// tree.printTree(tree.getRoot());
 		$(document).ready(function(){
 			var ctrl = new Controller();
 			// ctrl.buildMiniMaxDomT(tree.getRoot());
