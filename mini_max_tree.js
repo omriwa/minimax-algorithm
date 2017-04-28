@@ -32,48 +32,6 @@ Tree.prototype.getLeftLeaf = function(){
 	return root;
 }
 
-// Tree.prototype.findPlaceForNode = function(root , treeH , hCounter){
-// 	if(treeH <= hCounter)
-// 		return;
-// 	else if(!root.getLeftSon() || !root.getRightSon())
-// 		return root;
-// 	else{
-// 		return (
-// 		this.findPlaceForNode(root.getLeftSon() , treeH , hCounter + 1)
-// 		||
-// 		this.findPlaceForNode(root.getRightSon() , treeH , hCounter + 1)
-// 		)
-// 	}
-// }
-
-// /*add node to the tree and away that the tree will be full binary tree*/
-// Tree.prototype.addNode = function(node){
-// 	var root = this.getRoot();
-// 	//the tree is empty
-// 	if(!root.getLeftSon() && !root.getRightSon()){
-// 		root.setLeftSon(node);
-// 		node.setFather(root);
-// 		this.increaseTreeHeight();
-// 	}
-// 	else{
-// 		var father = this.findPlaceForNode
-// 		(root , this.getTreeHeight() , 0);
-// 		if(father){//the tree is not full until this height
-// 			if(!father.getLeftSon())
-// 				father.setLeftSon(node);
-// 			else
-// 				father.setRightSon(node);
-// 		}
-// 		else{//the tree is full in this height
-// 			father = this.getLeftLeaf();
-// 			this.increaseTreeHeight();
-// 			father.setLeftSon(node);
-// 		}
-// 		node.setFather(father);
-// 	}
-
-// }
-
 /*print the tree in post order*/
 Tree.prototype.printTree = function(root){
 	if(!root)
@@ -83,12 +41,13 @@ Tree.prototype.printTree = function(root){
 			this.printTree(root.getChildren()[i]);
 		}
 	    if(root != this.getRoot())
-	    	this.printMatrix(root.getVessels());
-			// console.log(
-			// 	root.getCords()[0] + " " + 
-			// 	root.getCords()[1] + " huristic " + 
-			// 	root.getHuristicVal() + " father " + root.getFather().getCords()
-			// );
+	    	// this.printMatrix(root.getVessels());
+			console.log(
+				root.getCords()[0] + " " + 
+				root.getCords()[1] + " huristic " + 
+				root.getHuristicVal() + " father " + root.getFather().getCords()
+				 + " huristic " + root.getFather().getHuristicVal()
+			);
 		else
 			console.log("root");
 	}
@@ -127,7 +86,6 @@ Tree.prototype.checkIfWon = function(root){
 		diag1Sign , diag2Sign , 
 		diagWon = false , output = 0;
 
-	this.printMatrix(vessels);
 	//check horizental
 	var sign , won = false;
 	for(var i = 0 ; i < 3 ; i++){
@@ -241,7 +199,6 @@ Tree.prototype.updateLeafVal = function(){
 
 	leafs.forEach(function(leaf){
 		leaf.setHuristicVal(Tree.prototype.checkIfWon(leaf));
-		console.log(leaf.getHuristicVal());
 	});
 	
 	return this;
@@ -257,7 +214,7 @@ Tree.prototype.updateTreeVal = function(root){
 		});
 	}
 }
-
+/*build the minimax tree, intialize huristic vals*/
 Tree.prototype.intializeMixTree = function(){
 	var root = this.getRoot();
 	this.buildMiniMaxTree(root , true , 9);
@@ -265,17 +222,64 @@ Tree.prototype.intializeMixTree = function(){
 	this.updateTreeVal(root);
 	// this.printTree(root);
 }
-
+/*print the vessels matrix as the board of tic tac toe*/
 Tree.prototype.printMatrix = function(matrix){
 	var output = "";
 	matrix.forEach(function(row){
 		row.forEach(function(col){
-			if(col.node.isX())
-				output += "X ";
+			if(col.node){//vessel exists
+				if(col.node.isX())
+					output += "X ";
+				else
+					output += "O ";
+			}
 			else
-				output += "O ";
+				output += "em ";
 		});
 		output += "\n";
 	});
 	console.log(output);
+}
+/**/
+Tree.prototype.getMaxMove = function(sign , curMove){
+	var root = this.getRoot(),
+		findCurMove = function(r , cur){
+						if(r.getChildren().length == 0)
+							return;
+						else if(Tree.prototype.isEqualMove(r , cur))
+							return cur;
+						else
+							r.getChildren().forEach(function(child){
+								findCurMove(child , cur);
+							});
+
+					  }
+	this.printMatrix(curMove.getVessels());
+	var curInTree = findCurMove(root , curMove);
+	this.printMatrix(curInTree.getVessels());
+	curInTree.getChildren().forEach(function(child){
+		if(sign && child.getHuristicVal() == 1)//X player
+			return child;
+		else if(!sign && child.getHuristicVal() == -1)//y Player
+			return child;
+	});
+	curInTree.getChildren().forEach(function(child){//if there is no wining move
+		if(child.getHuristicVal() == 0)
+			return child;
+	});
+
+
+
+
+}
+/*check if to moves are equal by the vessels*/
+Tree.prototype.isEqualMove = function(m1 , m2){
+	for(var i = 0 ; i < m1.getVessels().length ; i++)
+		for(var j = 0 ; j < m1.getVessels().length ; j++)
+			if(m1.getVessels()[i][j].node && m2.getVessels()[i][j].node)
+				if(!(m1.getVessels()[i][j].node.isX() && m2.getVessels()[i][j].node.isX()))
+					return false;
+			else
+				continue;
+	return true;
 }
