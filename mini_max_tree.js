@@ -81,106 +81,14 @@ Tree.prototype.buildMiniMaxTree = function(root , isX , n){
 }
 /*check if player won ,sign = true is X player else O player , checking by vertical, horizental and diagonal*/
 Tree.prototype.checkIfWon = function(root){
-	var vessels = root.getVessels() ,
-		diag1Sign , diag2Sign , 
-		diagWon = false , output = 0;
-		this.printMatrix(vessels);
-	//check horizental
-	var sign , won = false;
-	for(var i = 0 ; i < 3 ; i++){
-		sign = vessels[i][0];
-		if( vessels[i][0].node && vessels[i][1].node && vessels[i][2].node
-			&&
-			vessels[i][0].node.isX() == sign 
-			&&
-			vessels[i][1].node.isX() == sign
-			&&
-			vessels[i][2].node.isX() == sign
-		  )
-			won = true;
-	}
-	//check vertical
-	for(var i = 0 ; i < 3 ; i++){
-		sign = vessels[0][i];
-		if( vessels[0][i].node && vessels[1][i].node && vessels[2][i].node
-			&&
-			vessels[0][i].node.isX() == sign 
-			&&
-			vessels[1][i].node.isX() == sign
-			&&
-			vessels[2][i].node.isX() == sign 
-		  )
-			won = true;
-	}
-	//check doiagonal
-	var diag1 = [] , diag2 = [];
-	for(var i = 0 ; i < 3 ; i++){
-		if(vessels[i][i].node){
-			diag1.push(vessels[i][i].node.isX());
-		}
-		else{
-			diag1 = null;
-			break;
-		}
-	}
-
-	for(var i = 0 ; i < 3 ; i++){
-		if(vessels[i][2 - i].node){
-			diag2.push(vessels[i][2 - i].node.isX());
-		}
-		else{
-			diag2 = null;
-			break;
-		}
-	}
-	
-	if(diag1)
-		diag1Sign = diag1[0];
-	if(diag2)
-		diag2Sign = diag2[0];
-
-	if(
-	 	   diag1 && diag1.length == 3
-	   	   &&
-		   diag1[0] == diag1Sign 
-		   &&
-		   diag1[1] == diag1Sign 
-		   &&
-		   diag1[2] == diag1Sign
-	   )
-	{	
-		diagWon = true;
-	}
-
-	if(
-	   	   diag2 && diag2.length == 3
-	   	   &&
-		   diag2[0] == diag2Sign 
-		   &&
-		   diag2[1] == diag2Sign 
-		   &&
-		   diag2[2] == diag2Sign
-	   )
-	{
-		diagWon = true;
-	}
-
-	if(won || diagWon){
-		
-		if(diagWon){
-			if(diag1Sign || diag2Sign)
-				output = 1;
-			else
-				output = -1;
-		}
-		else{
-			if(sign)
-				output = 1;
-			else
-				output = -1;
-		}
-	}
-	console.log(output);
+	var vessels = root.getVessels() , output;
+	output = this.checkHorizenWin(vessels);
+	if(output == 0)
+		output = this.checkVertWin(vessels);
+	if(output == 0)
+		output = this.checkDiagR2LWin(vessels);
+	if(output == 0)
+		this.checkDiagL2RWin(vessels);
 	return output;
 }
 
@@ -293,4 +201,80 @@ Tree.prototype.isEqualMove = function(m1 , m2){
 				continue;
 		}
 	return true;
+}
+/*check if the is a row in the diagonal from left to right*/
+Tree.prototype.checkDiagR2LWin = function(v){
+	var sign , diag1 = [] , diagWon = false;
+	for(var i = 2 ; i > -1 ; i--){
+		if(v[i][i].node){
+			diag1.push(v[i][i].node.isX());
+		}
+		else{
+			diag1 = null;
+			break;
+		}
+	}
+	if(diag1)
+			sign = diag1[0];
+	if(
+		diag1 && diag1.length == 3
+		&&diag1[0] == sign &&diag1[1] == sign &&diag1[2] == sign
+	)	
+		diagWon = true;
+	if(diagWon){
+		if(sign)
+			return 1;
+		else
+			return -1;
+	}
+	return 0;
+}
+/*check if the is a row in the diagonal from right to left*/
+Tree.prototype.checkDiagL2RWin = function(v){
+	var sign , diag1 = [] , diagWon = false;
+	for(var i = 0 ; i < 3 ; i++){
+		if(v[i][i].node){
+			diag1.push(v[i][i].node.isX());
+		}
+		else{
+			diag1 = null;
+			break;
+		}
+	}
+	if(diag1)
+			sign = diag1[0];
+	if(
+		diag1 && diag1.length == 3
+		&&diag1[0] == sign &&diag1[1] == sign &&diag1[2] == sign
+	)	
+		diagWon = true;
+	if(diagWon){
+		if(sign)
+			return 1;
+		else
+			return -1;
+	}
+	return 0;
+}
+/*check horizental win*/
+Tree.prototype.checkHorizenWin = function(v){
+	for(var i = 0 ; i < v[0].length ; i++)
+		if(v[i][0].node && v[i][1].node && v[i][2].node){
+			if(v[i][0].node.isX() && v[i][1].node.isX() && v[i][2].node.isX())
+				return 1;
+			if(!v[i][0].node.isX() && !v[i][1].node.isX() && !v[i][2].node.isX())
+				return -1;
+		}
+	return 0;
+}
+/*check vertical win*/
+Tree.prototype.checkVertWin =function(v){
+	for(var i = 0 ; i < v[0].length ; i++)
+		if(v[0][i].node && v[1][i].node && v[2][i].node){
+			if(v[0][i].node.isX() && v[1][i].node.isX() && v[2][i].node.isX())
+				return 1;
+			if(!v[0][i].node.isX() && !v[1][i].node.isX() && !v[2][i].node.isX())
+				return -1;
+		}
+	return 0;
 }
