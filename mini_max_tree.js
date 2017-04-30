@@ -44,8 +44,7 @@ Tree.prototype.printTree = function(root){
 			console.log(
 				root.getCords()[0] + " " + 
 				root.getCords()[1] + " huristic " + 
-				root.getHuristicVal() + " father " + root.getFather().getCords()
-				 + " huristic " + root.getFather().getHuristicVal()
+				root.getHuristicVal()
 			);
 		}
 		else
@@ -58,8 +57,6 @@ build minimax tree
 */
 Tree.prototype.buildMiniMaxTree = function(root , isX , n){
 	var vesMatrix = root.getVessels();
-	
-	
 
 	if(n <= 0)
 		return;
@@ -71,7 +68,7 @@ Tree.prototype.buildMiniMaxTree = function(root , isX , n){
 					root.addChildren(child);
 					child.setFather(root);
 					child.addVessel(j , k , child);//adding the root to the vessel matrix
-					child.setHuristicVal(this.checkIfWon(child));
+					child.setHuristicVal(this.checkIfWon(child));//set huristic val
 					if(child.getHuristicVal() == 0)//if its not a winning move
 						this.buildMiniMaxTree(child , !isX , n - 1);	
 				}
@@ -131,9 +128,8 @@ Tree.prototype.updateTreeVal = function(root){
 /*build the minimax tree, intialize huristic vals*/
 Tree.prototype.intializeMixTree = function(){
 	var root = this.getRoot();
-	this.buildMiniMaxTree(root , true , 7);
-	// this.updateLeafVal();
-	// this.updateTreeVal(root);
+	this.buildMiniMaxTree(root , false , 7);
+	this.updateTreeVal(root);
 	// console.log("print tree \n");
 	// this.printTree(root);
 }
@@ -157,33 +153,19 @@ Tree.prototype.printMatrix = function(matrix){
 }
 /**/
 Tree.prototype.getMaxMove = function(sign , curMove){
-	var root = this.getRoot(),
-		findCurMove = function(r , cur){
-						if(r.getChildren().length == 0)
-							return;
-						else if(Tree.prototype.isEqualMove(r , cur))
-							return r;
-						else
-							r.getChildren().forEach(function(child){
-								findCurMove(child , cur);
-							});
-
-					  }
-	this.printMatrix(curMove.getVessels());
-	var curInTree = findCurMove(root , curMove);
-	this.printMatrix(curInTree.getVessels());
-	curInTree.getChildren().forEach(function(child){
-		if(sign && child.getHuristicVal() == 1)//X player
-			return child;
-		else if(!sign && child.getHuristicVal() == -1)//y Player
-			return child;
-	});
-	curInTree.getChildren().forEach(function(child){//if there is no wining move
-		if(child.getHuristicVal() == 0)
-			return child;
-	});
-
-
+	var curInTree = this.findCurMove(this.getRoot() , curMove);
+	if(curInTree){
+		curInTree.getChildren().forEach(function(child){
+			if(sign && child.getHuristicVal() == 1)//X player
+				return child;
+			else if(!sign && child.getHuristicVal() == -1)//y Player
+				return child;
+		});
+		curInTree.getChildren().forEach(function(child){//if there is no wining move
+			if(child.getHuristicVal() == 0)
+				return child;
+		});
+	}
 
 
 }
@@ -191,14 +173,18 @@ Tree.prototype.getMaxMove = function(sign , curMove){
 Tree.prototype.isEqualMove = function(m1 , m2){
 	for(var i = 0 ; i < m1.getVessels().length ; i++)
 		for(var j = 0 ; j < m1.getVessels().length ; j++){
-			if(!m1.getVessels()[i][j].node && m2.getVessels()[i][j].node)//if the curboard has vessels that the search board doesnt have 
+			if(!m1.getVessels()[i][j].node && m2.getVessels()[i][j].node
+				||
+				m1.getVessels()[i][j].node && !m2.getVessels()[i][j].node
+			  )//they have the vessels in the same place
 				return false;
-
-			else if(m1.getVessels()[i][j].node && m2.getVessels()[i][j].node)
-					if(!(m1.getVessels()[i][j].node.isX() && m2.getVessels()[i][j].node.isX()))
-						return false;
-			else
-				continue;
+			if(m1.getVessels()[i][j].node && m2.getVessels()[i][j].node){
+				if(m1.getVessels()[i][j].node.isX() && !m2.getVessels()[i][j].node.isX()
+					||
+				   !m1.getVessels()[i][j].node.isX() && m2.getVessels()[i][j].node.isX()
+				)//different vessels
+					return false;
+			}
 		}
 	return true;
 }
@@ -206,8 +192,8 @@ Tree.prototype.isEqualMove = function(m1 , m2){
 Tree.prototype.checkDiagR2LWin = function(v){
 	var sign , diag1 = [] , diagWon = false;
 	for(var i = 2 ; i > -1 ; i--){
-		if(v[i][i].node){
-			diag1.push(v[i][i].node.isX());
+		if(v[2 - i][i].node){
+			diag1.push(v[2 - i][i].node.isX());
 		}
 		else{
 			diag1 = null;
@@ -277,4 +263,18 @@ Tree.prototype.checkVertWin =function(v){
 				return -1;
 		}
 	return 0;
+}
+/*find the same move that given in the Minimax tree*/
+Tree.prototype.findCurMove = function(r , cur){
+	if(r.getChildren().length == 0)
+		return;
+	else if(this.isEqualMove(r , cur)){
+		console.log("find cur");
+		this.printMatrix(r.getVessels());
+		return r;
+	}
+	else
+		r.getChildren().forEach(function(child){
+			return Tree.prototype.findCurMove(child , cur);
+		});
 }
