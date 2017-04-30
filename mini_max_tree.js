@@ -40,14 +40,14 @@ Tree.prototype.printTree = function(root){
 		for(var i = 0 ; i < root.getChildren().length ; i++){
 			this.printTree(root.getChildren()[i]);
 		}
-	    if(root != this.getRoot())
-	    	// this.printMatrix(root.getVessels());
+	    if(root != this.getRoot()){
 			console.log(
 				root.getCords()[0] + " " + 
 				root.getCords()[1] + " huristic " + 
 				root.getHuristicVal() + " father " + root.getFather().getCords()
 				 + " huristic " + root.getFather().getHuristicVal()
 			);
+		}
 		else
 			console.log("root");
 	}
@@ -57,13 +57,9 @@ Tree.prototype.printTree = function(root){
 build minimax tree
 */
 Tree.prototype.buildMiniMaxTree = function(root , isX , n){
-	var vesMatrix;
+	var vesMatrix = root.getVessels();
 	
-	if(root != this.getRoot()){
-		vesMatrix = root.VesselMatrix(root.getVessels());//copying the place of vessels
-		var cords = root.getCords();
-		root.addVessel(cords[0] , cords[1] , root);//adding the root to the vessel matrix
-	}
+	
 
 	if(n <= 0)
 		return;
@@ -74,7 +70,10 @@ Tree.prototype.buildMiniMaxTree = function(root , isX , n){
 					var child = new Node(isX , j , k , vesMatrix);
 					root.addChildren(child);
 					child.setFather(root);
-					this.buildMiniMaxTree(child , !isX , n - 1);	
+					child.addVessel(j , k , child);//adding the root to the vessel matrix
+					child.setHuristicVal(this.checkIfWon(child));
+					if(child.getHuristicVal() == 0)//if its not a winning move
+						this.buildMiniMaxTree(child , !isX , n - 1);	
 				}
 			}
 		}		
@@ -85,7 +84,7 @@ Tree.prototype.checkIfWon = function(root){
 	var vessels = root.getVessels() ,
 		diag1Sign , diag2Sign , 
 		diagWon = false , output = 0;
-
+		this.printMatrix(vessels);
 	//check horizental
 	var sign , won = false;
 	for(var i = 0 ; i < 3 ; i++){
@@ -123,7 +122,10 @@ Tree.prototype.checkIfWon = function(root){
 			diag1 = null;
 			break;
 		}
-		if(vessels[2 - i][2 - i].node){
+	}
+
+	for(var i = 0 ; i < 3 ; i++){
+		if(vessels[i][2 - i].node){
 			diag2.push(vessels[i][2 - i].node.isX());
 		}
 		else{
@@ -131,8 +133,12 @@ Tree.prototype.checkIfWon = function(root){
 			break;
 		}
 	}
-	diag1Sign = diag1[0];
-	diag2Sign = diag2[0];
+	
+	if(diag1)
+		diag1Sign = diag1[0];
+	if(diag2)
+		diag2Sign = diag2[0];
+
 	if(
 	 	   diag1 && diag1.length == 3
 	   	   &&
@@ -174,7 +180,7 @@ Tree.prototype.checkIfWon = function(root){
 				output = -1;
 		}
 	}
-	
+	console.log(output);
 	return output;
 }
 
@@ -217,9 +223,10 @@ Tree.prototype.updateTreeVal = function(root){
 /*build the minimax tree, intialize huristic vals*/
 Tree.prototype.intializeMixTree = function(){
 	var root = this.getRoot();
-	this.buildMiniMaxTree(root , true , 9);
-	this.updateLeafVal();
-	this.updateTreeVal(root);
+	this.buildMiniMaxTree(root , true , 7);
+	// this.updateLeafVal();
+	// this.updateTreeVal(root);
+	// console.log("print tree \n");
 	// this.printTree(root);
 }
 /*print the vessels matrix as the board of tic tac toe*/
@@ -234,7 +241,7 @@ Tree.prototype.printMatrix = function(matrix){
 					output += "O ";
 			}
 			else
-				output += "em ";
+				output += "E ";
 		});
 		output += "\n";
 	});
@@ -247,7 +254,7 @@ Tree.prototype.getMaxMove = function(sign , curMove){
 						if(r.getChildren().length == 0)
 							return;
 						else if(Tree.prototype.isEqualMove(r , cur))
-							return cur;
+							return r;
 						else
 							r.getChildren().forEach(function(child){
 								findCurMove(child , cur);
@@ -275,11 +282,15 @@ Tree.prototype.getMaxMove = function(sign , curMove){
 /*check if to moves are equal by the vessels*/
 Tree.prototype.isEqualMove = function(m1 , m2){
 	for(var i = 0 ; i < m1.getVessels().length ; i++)
-		for(var j = 0 ; j < m1.getVessels().length ; j++)
-			if(m1.getVessels()[i][j].node && m2.getVessels()[i][j].node)
-				if(!(m1.getVessels()[i][j].node.isX() && m2.getVessels()[i][j].node.isX()))
-					return false;
+		for(var j = 0 ; j < m1.getVessels().length ; j++){
+			if(!m1.getVessels()[i][j].node && m2.getVessels()[i][j].node)//if the curboard has vessels that the search board doesnt have 
+				return false;
+
+			else if(m1.getVessels()[i][j].node && m2.getVessels()[i][j].node)
+					if(!(m1.getVessels()[i][j].node.isX() && m2.getVessels()[i][j].node.isX()))
+						return false;
 			else
 				continue;
+		}
 	return true;
 }

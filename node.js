@@ -64,16 +64,7 @@ function Node(sign , x , y , vessels){
 			_father = node;
 			return this;
 		}
-		//set left son
-		this.setLeftSon = function(node){
-			_lSon = node;
-			return this;
-		}
-		//set right son
-		this.setRightSon = function(node){
-			_rSon = node;
-			return this;
-		}
+
 		//add children
 		this.addChildren = function(newNode){
 			_children.push(newNode);
@@ -102,10 +93,11 @@ Node.prototype.VesselMatrix = function(vessels){
 		for(var i = 0 ; i < 3 ; i++){
 			matrix[i] = [];
 			for(var j = 0 ; j < 3 ; j++){
-				if(!vessels)
-					matrix[i].push({vessel : false});
-				else
+				if(!vessels || !vessels[i][j].node)//some cells are empty
+					matrix[i].push({vessel : false });
+				else{//not empty cells
 					matrix[i].push(vessels[i][j]);
+				}
 			}
 		}
 	return matrix;
